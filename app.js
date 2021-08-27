@@ -63,3 +63,89 @@ const galleryItems = [
     description: 'Lighthouse Coast Sea',
   },
 ];
+
+const modalWindow = document.querySelector('.js-lightbox');
+const modalImage = document.querySelector('.lightbox__image');
+const modalCloseBtn = document.querySelector('.lightbox__button');
+const modalOverlay = document.querySelector('.lightbox__overlay');
+
+
+const listOfPictures = document.querySelector('.js-gallery');
+const picturesGallery = galleryItems.map(({ preview, original, description }) => {
+      return `
+      <li class="gallery__item">
+        <a
+          class="gallery__link"
+          href="${original}"
+        >
+          <img
+            class="gallery__image"
+            src="${preview}"
+            data-source="${original}" 
+            alt="${description}"
+          />
+        </a>
+      </li>
+      `;
+    })
+    .join('');
+
+listOfPictures.insertAdjacentHTML('beforeend', picturesGallery);
+
+listOfPictures.addEventListener('click', onClickOpenModalWindow);
+function onClickOpenModalWindow(evt) {
+  if (evt.target.nodeName !== 'IMG') {
+    return
+  };
+
+  evt.preventDefault();
+  modalImage.src = evt.target.dataset.source
+  modalImage.alt = evt.target.alt
+  modalWindow.classList.add('is-open');
+
+  window.addEventListener('keydown', onEscapePress);
+  window.addEventListener('keydown', onArrowPress);
+};
+
+modalCloseBtn.addEventListener('click', onCloseModalWindow);
+function onCloseModalWindow(evt) {
+  modalWindow.classList.remove('is-open');
+
+  modalImage.src = '';
+  modalImage.alt = '';
+
+  window.removeEventListener('keydown', onEscapePress);
+  window.removeEventListener('keydown', onArrowPress);
+};
+
+modalOverlay.addEventListener('click', onOverlayClick);
+function onOverlayClick(evt) {
+  if (evt.currentTarget === evt.target) {
+    onCloseModalWindow();
+  }
+};
+
+function onEscapePress(evt) {
+  if (evt.key === 'Escape') {
+    onCloseModalWindow();
+  }
+};
+
+function onArrowPress(evt) {
+  let newIndex;
+  const items = galleryItems.map(({ original }) => original);
+  const currentImgIndex = items.indexOf(modalImage.src);
+  if (evt.key === 'ArrowLeft') {
+    newIndex = currentImgIndex - 1;
+    if (newIndex == -1) {
+      newIndex = items.length - 1;
+    }
+  } else if (evt.key === 'ArrowRight') {
+    newIndex = currentImgIndex + 1;
+    if (newIndex === (items.length)) {
+      newIndex = 0;
+    }
+  }
+
+  modalImage.src = items[newIndex];
+};
